@@ -1,0 +1,3 @@
+# ziguid
+
+GUIDs for zig.
