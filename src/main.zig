@@ -106,7 +106,7 @@ fn StringBuilder(comptime format: Format, comptime case: Case) type {
     };
 }
 
-export const GUID = struct {
+pub const GUID = packed struct {
     Data1: u32,
     Data2: u16,
     Data3: u16,
