@@ -4,6 +4,16 @@ const assert = @import("std").debug.assert;
 const os = @import("std").os;
 const testing = @import("std").testing;
 
+pub const Format = enum {
+    Bare,
+    Dashed,
+    Braced,
+};
+pub const Case = enum {
+    Lower,
+    Upper,
+};
+
 const GUIDBuilder = struct {
     bytes: [16]u8,
     first_nibble: ?u8,
@@ -19,7 +29,7 @@ const GUIDBuilder = struct {
         };
     }
 
-    pub inline fn pushNibble(self: *Self, nib: u8) void {
+    inline fn pushNibble(self: *Self, nib: u8) void {
         assert(self.pointer < 16);
         assert(nib <= 0xF);
         if (self.first_nibble) |val| {
@@ -35,16 +45,27 @@ const GUIDBuilder = struct {
         assert(self.pointer == 16);
         return GUID.fromBytes(self.bytes);
     }
-};
 
-pub const Format = enum {
-    Bare,
-    Dashed,
-    Braced,
-};
-pub const Case = enum {
-    Lower,
-    Upper,
+    inline fn parseUnbraced(comptime format: Format, string: []const u8) !GUID {
+        var builder = GUIDBuilder.init();
+        for (string) |c, i| {
+            switch (c) {
+                'A'...'F' => builder.pushNibble(c - 'A' + 10),
+                'a'...'f' => builder.pushNibble(c - 'a' + 10),
+                '0'...'9' => builder.pushNibble(c - '0'),
+                '-' => {
+                    if (format == Format.Bare) {
+                        return error.UnexpectedDash;
+                    }
+                    if (i != 8 and i != 13 and i != 18 and i != 23) {
+                        return error.UnexpectedDash;
+                    }
+                },
+                else => return error.UnexpectedCharacter,
+            }
+        }
+        return builder.build();
+    }
 };
 
 fn StringBuilder(comptime format: Format, comptime case: Case) type {
@@ -161,36 +182,13 @@ pub const GUID = packed struct {
     /// Parse a dashed GUID, of the form: "12345678-ABCD-EFEF-9090-1234567890AB"
     pub fn parseDashed(string: []const u8) !Self {
         if (string.len != 36) return error.IncorrectLength;
-
-        var builder = GUIDBuilder.init();
-        for (string) |c, i| {
-            switch (c) {
-                'A'...'F' => builder.pushNibble(c - 'A' + 10),
-                'a'...'f' => builder.pushNibble(c - 'a' + 10),
-                '0'...'9' => builder.pushNibble(c - '0'),
-                '-' => if (i != 8 and i != 13 and i != 18 and i != 23) {
-                    return error.UnexpectedDash;
-                },
-                else => return error.UnexpectedCharacter,
-            }
-        }
-        return builder.build();
+        return GUIDBuilder.parseUnbraced(Format.Dashed, string);
     }
 
     /// Parse a bare GUID, of the form: "12345678ABCDEFEF90901234567890AB"
     pub fn parseBare(string: []const u8) !Self {
         if (string.len != 32) return error.IncorrectLength;
-
-        var builder = GUIDBuilder.init();
-        for (string) |c, i| {
-            switch (c) {
-                'A'...'F' => builder.pushNibble(c - 'A' + 10),
-                'a'...'f' => builder.pushNibble(c - 'a' + 10),
-                '0'...'9' => builder.pushNibble(c - '0'),
-                else => return error.UnexpectedCharacter,
-            }
-        }
-        return builder.build();
+        return GUIDBuilder.parseUnbraced(Format.Bare, string);
     }
 
     /// Create a GUID at compile time.
@@ -203,29 +201,12 @@ pub const GUID = packed struct {
         if (string.len == 38) {
             actual_string = string[1..37];
         }
-        const has_dashes = actual_string.len == 36;
-        if (has_dashes) {
-            assert(actual_string.len == 36);
-        } else {
+        const format = if (actual_string.len == 36) Format.Dashed else Format.Bare;
+        if (format == Format.Bare) {
             assert(actual_string.len == 32);
         }
 
-        var builder = GUIDBuilder.init();
-        inline for (actual_string) |c, i| {
-            switch (c) {
-                'A'...'F' => builder.pushNibble(c - 'A' + 10),
-                'a'...'f' => builder.pushNibble(c - 'a' + 10),
-                '0'...'9' => builder.pushNibble(c - '0'),
-                '-' => {
-                    if (!has_dashes or (i != 8 and i != 13 and i != 18 and i != 23)) {
-                        @compileError("unexpected dash in GUID");
-                    }
-                },
-                else => @compileError("non-hexadecimal character in GUID"),
-            }
-        }
-
-        return builder.build();
+        return GUIDBuilder.parseUnbraced(format, actual_string) catch unreachable;
     }
 
     pub fn toString(self: *const Self, buffer: []u8, comptime format: Format, comptime case: Case) ![]u8 {
