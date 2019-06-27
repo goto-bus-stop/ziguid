@@ -108,15 +108,17 @@ fn StringBuilder(comptime format: Format, comptime case: Case) type {
         pub fn pushByte(self: *Self, byte: u8) void {
             self.pushNibble((byte & 0xF0) >> 4);
             self.pushNibble(byte & 0x0F);
-            if (format == Format.Braced and self.pointer == len) {
-                self.string[self.pointer] = '}';
+            const char: ?u8 = if (format == Format.Braced) switch (self.pointer) {
+                9, 14, 19, 24 => u8('-'),
+                len - 1 => u8('}'),
+                else => null,
+            } else if (format == Format.Dashed) switch (self.pointer) {
+                8, 13, 18, 23 => u8('-'),
+                else => null,
+            } else null;
+            if (char) |c| {
+                self.string[self.pointer] = c;
                 self.pointer += 1;
-            }
-            if (format == Format.Dashed) {
-                if (self.pointer == 8 or self.pointer == 13 or self.pointer == 18 or self.pointer == 23) {
-                    self.string[self.pointer] = '-';
-                    self.pointer += 1;
-                }
             }
         }
 
@@ -232,8 +234,10 @@ test "compile time and runtime parsing" {
 test "to string" {
     var buffer = []u8{0} ** 38;
     const guid = GUID.from("12345678-ABCD-EFEF-9090-1234567890AB");
-    const str = try guid.toString(buffer[0..], Format.Dashed, Case.Upper);
+    var str = try guid.toString(buffer[0..], Format.Dashed, Case.Upper);
     testing.expectEqualSlices(u8, "12345678-ABCD-EFEF-9090-1234567890AB", str[0..36]);
+    str = try guid.toString(buffer[0..], Format.Braced, Case.Lower);
+    testing.expectEqualSlices(u8, "{12345678-abcd-efef-9090-1234567890ab}", str);
 }
 
 test "parse error" {
