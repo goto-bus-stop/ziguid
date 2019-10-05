@@ -232,7 +232,7 @@ test "compile time and runtime parsing" {
 }
 
 test "to string" {
-    var buffer = []u8{0} ** 38;
+    var buffer = [_]u8{0} ** 38;
     const guid = GUID.from("12345678-ABCD-EFEF-9090-1234567890AB");
     var str = try guid.toString(buffer[0..], Format.Dashed, Case.Upper);
     testing.expectEqualSlices(u8, "12345678-ABCD-EFEF-9090-1234567890AB", str[0..36]);
