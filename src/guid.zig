@@ -1,7 +1,7 @@
 const builtin = @import("builtin");
 const mem = @import("std").mem;
 const assert = @import("std").debug.assert;
-const os = @import("std").os;
+const crypto = @import("std").crypto;
 const testing = @import("std").testing;
 
 pub const Format = enum {
@@ -149,7 +149,7 @@ pub const GUID = packed struct {
 
     pub fn v4() !Self {
         var bytes: [16]u8 = undefined;
-        try os.getRandomBytes(bytes[0..]);
+        try crypto.randomBytes(bytes[0..]);
         return Self.fromBytes(bytes);
     }
 
