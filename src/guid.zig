@@ -16,17 +16,13 @@ pub const Case = enum {
 
 const GUIDBuilder = struct {
     bytes: [16]u8,
-    first_nibble: ?u8,
-    pointer: usize,
+    first_nibble: ?u8 = null,
+    pointer: usize = 0,
 
     const Self = @This();
 
     pub inline fn init() Self {
-        return Self{
-            .bytes = undefined,
-            .first_nibble = null,
-            .pointer = 0,
-        };
+        return Self{ .bytes = undefined };
     }
 
     inline fn pushNibble(self: *Self, nib: u8) void {
@@ -76,7 +72,7 @@ fn StringBuilder(comptime format: Format, comptime case: Case) type {
     };
     return struct {
         string: []u8,
-        pointer: usize,
+        pointer: usize = 0,
 
         const Self = @This();
 
@@ -84,10 +80,7 @@ fn StringBuilder(comptime format: Format, comptime case: Case) type {
             if (buffer.len < len) {
                 return error.BufferTooSmall;
             }
-            var self = Self{
-                .string = buffer,
-                .pointer = 0,
-            };
+            var self = Self{ .string = buffer };
             if (format == Format.Braced) {
                 self.string[0] = '{';
                 self.pointer += 1;
