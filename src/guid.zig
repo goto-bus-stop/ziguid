@@ -50,7 +50,7 @@ const GUIDBuilder = struct {
                 'a'...'f' => builder.pushNibble(c - 'a' + 10),
                 '0'...'9' => builder.pushNibble(c - '0'),
                 '-' => {
-                    if (format == Format.Bare) {
+                    if (format == .Bare) {
                         return error.UnexpectedDash;
                     }
                     if (i != 8 and i != 13 and i != 18 and i != 23) {
@@ -66,9 +66,9 @@ const GUIDBuilder = struct {
 
 fn StringBuilder(comptime format: Format, comptime case: Case) type {
     const len = switch (format) {
-        Format.Bare => 32,
-        Format.Dashed => 36,
-        Format.Braced => 38,
+        .Bare => 32,
+        .Dashed => 36,
+        .Braced => 38,
     };
     return struct {
         string: []u8,
@@ -81,7 +81,7 @@ fn StringBuilder(comptime format: Format, comptime case: Case) type {
                 return error.BufferTooSmall;
             }
             var self = Self{ .string = buffer };
-            if (format == Format.Braced) {
+            if (format == .Braced) {
                 self.string[0] = '{';
                 self.pointer += 1;
             }
@@ -101,11 +101,11 @@ fn StringBuilder(comptime format: Format, comptime case: Case) type {
         pub fn pushByte(self: *Self, byte: u8) void {
             self.pushNibble((byte & 0xF0) >> 4);
             self.pushNibble(byte & 0x0F);
-            const char: ?u8 = if (format == Format.Braced) switch (self.pointer) {
+            const char: ?u8 = if (format == .Braced) switch (self.pointer) {
                 9, 14, 19, 24 => u8('-'),
                 len - 1 => u8('}'),
                 else => null,
-            } else if (format == Format.Dashed) switch (self.pointer) {
+            } else if (format == .Dashed) switch (self.pointer) {
                 8, 13, 18, 23 => u8('-'),
                 else => null,
             } else null;
@@ -177,13 +177,13 @@ pub const GUID = packed struct {
     /// Parse a dashed GUID, of the form: "12345678-ABCD-EFEF-9090-1234567890AB"
     pub fn parseDashed(string: []const u8) !Self {
         if (string.len != 36) return error.IncorrectLength;
-        return GUIDBuilder.parseUnbraced(Format.Dashed, string);
+        return GUIDBuilder.parseUnbraced(.Dashed, string);
     }
 
     /// Parse a bare GUID, of the form: "12345678ABCDEFEF90901234567890AB"
     pub fn parseBare(string: []const u8) !Self {
         if (string.len != 32) return error.IncorrectLength;
-        return GUIDBuilder.parseUnbraced(Format.Bare, string);
+        return GUIDBuilder.parseUnbraced(.Bare, string);
     }
 
     /// Create a GUID at compile time.
@@ -196,8 +196,8 @@ pub const GUID = packed struct {
         if (string.len == 38) {
             actual_string = string[1..37];
         }
-        const format = if (actual_string.len == 36) Format.Dashed else Format.Bare;
-        if (format == Format.Bare) {
+        const format = if (actual_string.len == 36) .Dashed else .Bare;
+        if (format == .Bare) {
             assert(actual_string.len == 32);
         }
 
@@ -227,9 +227,9 @@ test "compile time and runtime parsing" {
 test "to string" {
     var buffer = [_]u8{0} ** 38;
     const guid = GUID.from("12345678-ABCD-EFEF-9090-1234567890AB");
-    var str = try guid.toString(buffer[0..], Format.Dashed, Case.Upper);
+    var str = try guid.toString(buffer[0..], .Dashed, .Upper);
     testing.expectEqualSlices(u8, "12345678-ABCD-EFEF-9090-1234567890AB", str[0..36]);
-    str = try guid.toString(buffer[0..], Format.Braced, Case.Lower);
+    str = try guid.toString(buffer[0..], .Braced, .Lower);
     testing.expectEqualSlices(u8, "{12345678-abcd-efef-9090-1234567890ab}", str);
 }
 

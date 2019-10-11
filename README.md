@@ -10,7 +10,7 @@ const at_comptime = GUID.from("14aacebd-2dfe-4f5c-a475-d1b57b0cb775");
 
 const generate_at_runtime = GUID.v4();
 var string_buffer = [_]u8{0} ** 38;
-generate_at_runtime.toString(string_buffer, guid.Format.Braced, guid.Case.Upper);
+generate_at_runtime.toString(string_buffer, .Braced, .Upper);
 // "{B10BC49E-E79A-478B-B180-0A7093E2D1BE}"
 ```
 
