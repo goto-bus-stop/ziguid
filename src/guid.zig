@@ -102,11 +102,11 @@ fn StringBuilder(comptime format: Format, comptime case: Case) type {
             self.pushNibble((byte & 0xF0) >> 4);
             self.pushNibble(byte & 0x0F);
             const char: ?u8 = if (format == .Braced) switch (self.pointer) {
-                9, 14, 19, 24 => u8('-'),
-                len - 1 => u8('}'),
+                9, 14, 19, 24 => @as(u8, '-'),
+                len - 1 => @as(u8, '}'),
                 else => null,
             } else if (format == .Dashed) switch (self.pointer) {
-                8, 13, 18, 23 => u8('-'),
+                8, 13, 18, 23 => @as(u8, '-'),
                 else => null,
             } else null;
             if (char) |c| {
@@ -122,6 +122,7 @@ fn StringBuilder(comptime format: Format, comptime case: Case) type {
     };
 }
 
+/// A winapi-compatible GUID.
 pub const GUID = packed struct {
     Data1: u32,
     Data2: u16,
