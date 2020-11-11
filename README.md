@@ -17,6 +17,4 @@ generate_at_runtime.toString(string_buffer, .Braced, .Upper);
 The GUID struct is 16 bytes large and has an identical layout to the GUID struct in the Windows C API.
 
 ## License
-[GPL-3.0](./LICENSE.md)
-
-If the license is a problem for your use case, please open an issue to discuss.
+[Apache-2.0](./LICENSE.md)
