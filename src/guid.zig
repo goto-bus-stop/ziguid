@@ -215,26 +215,26 @@ pub const GUID = packed struct {
 };
 
 test "nil equals nil" {
-    testing.expect(GUID.nil().eq(&GUID.nil()));
+    try testing.expect(GUID.nil().eq(&GUID.nil()));
 }
 
 test "compile time and runtime parsing" {
-    testing.expect(GUID.from("12345678-ABCD-EFEF-9090-1234567890AB").eq(&try GUID.parse("12345678-ABCD-EFEF-9090-1234567890AB")));
-    testing.expect(GUID.from("12345678-ABCD-EFEF-9090-1234567890AB").eq(&try GUID.parse("{12345678-ABCD-EFEF-9090-1234567890AB}")));
-    testing.expect(GUID.from("{12345678-ABCD-EFEF-9090-1234567890AB}").eq(&try GUID.parse("12345678ABCDEFEF90901234567890AB")));
-    testing.expect(GUID.from("12345678ABCDEFEF90901234567890AB").eq(&try GUID.parse("12345678-ABCD-EFEF-9090-1234567890AB")));
+    try testing.expect(GUID.from("12345678-ABCD-EFEF-9090-1234567890AB").eq(&try GUID.parse("12345678-ABCD-EFEF-9090-1234567890AB")));
+    try testing.expect(GUID.from("12345678-ABCD-EFEF-9090-1234567890AB").eq(&try GUID.parse("{12345678-ABCD-EFEF-9090-1234567890AB}")));
+    try testing.expect(GUID.from("{12345678-ABCD-EFEF-9090-1234567890AB}").eq(&try GUID.parse("12345678ABCDEFEF90901234567890AB")));
+    try testing.expect(GUID.from("12345678ABCDEFEF90901234567890AB").eq(&try GUID.parse("12345678-ABCD-EFEF-9090-1234567890AB")));
 }
 
 test "to string" {
     var buffer = [_]u8{0} ** 38;
     const guid = GUID.from("12345678-ABCD-EFEF-9090-1234567890AB");
     var str = try guid.toString(buffer[0..], .Dashed, .Upper);
-    testing.expectEqualSlices(u8, "12345678-ABCD-EFEF-9090-1234567890AB", str[0..36]);
+    try testing.expectEqualSlices(u8, "12345678-ABCD-EFEF-9090-1234567890AB", str[0..36]);
     str = try guid.toString(buffer[0..], .Braced, .Lower);
-    testing.expectEqualSlices(u8, "{12345678-abcd-efef-9090-1234567890ab}", str);
+    try testing.expectEqualSlices(u8, "{12345678-abcd-efef-9090-1234567890ab}", str);
 }
 
 test "parse error" {
-    testing.expectError(error.UnexpectedCharacter, GUID.parse("nothexad-ABCD-EFEF-9090-1234567890AB"));
-    testing.expectError(error.UnexpectedDash, GUID.parse("1234-678-ABCD-EFEF-9090-1234567890AB"));
+    try testing.expectError(error.UnexpectedCharacter, GUID.parse("nothexad-ABCD-EFEF-9090-1234567890AB"));
+    try testing.expectError(error.UnexpectedDash, GUID.parse("1234-678-ABCD-EFEF-9090-1234567890AB"));
 }
