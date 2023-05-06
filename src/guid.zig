@@ -123,7 +123,7 @@ fn StringBuilder(comptime format: Format, comptime case: Case) type {
 }
 
 /// A winapi-compatible GUID.
-pub const GUID = packed struct {
+pub const GUID = extern struct {
     Data1: u32,
     Data2: u16,
     Data3: u16,
