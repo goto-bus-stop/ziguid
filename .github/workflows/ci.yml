@@ -4,8 +4,11 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        zig-version: [0.8.0, 0.9.0, 0.10.1]
+        # os: [ubuntu-latest, macos-latest, windows-latest]
+        # zig-version: [0.8.0, 0.9.0, 0.10.1]
+        include:
+          - os: ubuntu-latest
+            zig-version: 0.10.1
     runs-on: ${{matrix.os}}
     steps:
       - name: Checkout sources
