@@ -141,6 +141,7 @@ pub const GUID = extern struct {
         return Self.from("00000000-0000-0000-0000-000000000000");
     }
 
+    /// Generate a random UUID-v4 GUID. Uses zig std crypto as the randomness source.
     pub fn v4() !Self {
         var bytes: [16]u8 = undefined;
         try crypto.randomBytes(bytes[0..]);
