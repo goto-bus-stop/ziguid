@@ -11,7 +11,7 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v3
       - name: Install Zig
-        uses: goto-bus-stop/setup-zig@cached
+        uses: goto-bus-stop/setup-zig@v2
         with:
           version: ${{matrix.zig-version}}
       - name: Run tests
