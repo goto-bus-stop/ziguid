@@ -1,6 +1,7 @@
 const io = @import("std").io;
 const GUID = @import("./guid.zig").GUID;
 
+// we got caches upon caches
 pub fn main() !void {
     const stdout_file = try io.getStdOut();
 
