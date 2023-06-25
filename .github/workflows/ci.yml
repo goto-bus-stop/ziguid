@@ -11,7 +11,7 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v3
       - name: Install Zig
-        uses: goto-bus-stop/setup-zig@v2
+        uses: goto-bus-stop/setup-zig@cache-action
         with:
           version: ${{matrix.zig-version}}
       - name: Run tests
@@ -23,7 +23,7 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v3
       - name: Install Zig
-        uses: goto-bus-stop/setup-zig@v2
+        uses: goto-bus-stop/setup-zig@cache-action
         with:
           version: 0.9.0
       - name: Check code style
